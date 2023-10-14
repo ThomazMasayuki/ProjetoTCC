@@ -107,8 +107,6 @@ identificador_mais_transações <- transações_por_identificador$nameOrig[which
 
 identificador_mais_transações2 <- transações_por_identificador2$nameDest[which.max(transações_por_identificador2$total_transacoes)]
 
-#código sobre o identificador com maior quantidade (45) ficou pronto (Verificar melhor esse código depois)
-
 mais_transacoes <- max(transações_por_identificador$total_transacoes)
 
 transações_por_identificador <- table(total_transacoes$nameOrig)
@@ -173,35 +171,6 @@ Fraud %>%
   group_by(step) %>%
   mutate(step, na.rm = TRUE)
   mutate(mass_norm = mass / mean(mass, na.rm = TRUE))
-#Criando o gráfico para apresentação
-
-graficotipo <- barplot(top_5_valores_tipo, main = "Top 5 valores mais repetidos", xlab = "Valores", ylab = "Contagem")
-text(graficotipo, contagemD, labels = contagemd, pos = 3, cex = 0.8)
-
-graficotipo2 <- barplot(top_5_valores_tipo2, main = "Top 5 valores mais repetidos", xlab = "Valores", ylab = "Contagem")
-text(graficotipo2, top_5_valores_tipo2, labels = top_5_valores_tipo2, pos = 3, cex = 0.8)
-
-#Foi notado que as informações em maiores quantidades nas duas colunas, "nameOrig" e "nameDest" são diferentes
-#Colocando informações de quantidade em cada coluna 
-#Compreender por que a informação não gera com comando pipe e sem nenhuma requisição 
-grafico %>%  barplot(top_5_valores_tipo, main = "Top 5 valores mais repetidos", xlab = "Valores", ylab = "Contagem") +
-  text(grafico, contagem, labels = contagem, pos = 3, cex = 0.8)
-
-#A partir de agora, iremos partir para uma análise mais em gráficos, com o viés de identificar cada informação das colunas
-
-#Gráfico de barras referente a quantidade de Fraude e Não Fraude: #Entender como fazer o gráfico colorido e colocando as informações de referência
-ggplot(data = Fraud) +
-  geom_bar(mapping = aes(x = isFraud))
-
-#Escrever melhor esse script
-ggplot(Fraud,aes(x=isFraud,fill=isFraud))+geom_bar(stat = 'count')+labs(x = '0 and 1') +
-  geom_label(stat='count',aes(label=..count..), size=5) +theme_classic(base_size = 11)
-
-#Gráfico de barras verificando a quantidade de tipos de pagamento (Quantidade de transação por tipo de transação)
-ggplot(data = Fraud) +
-  geom_bar(mapping = aes(x = type))
-
-ggplot(data = Fraud, aes(x = type , fill = type)) + geom_bar() + labs(title = "Transactions as per Type",  x = 'Transaction Type' , y = 'No of transactions' )+theme_classic()
 
 #Construção do modelo 
 mod <- glm(isFraud ~ type + amount,
