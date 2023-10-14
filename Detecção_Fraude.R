@@ -1,4 +1,4 @@
-#Instalação e carregamento dos pacotes necessários
+#Install packges 
 install.packages("plotly")
 install.packages("tidyverse")
 install.packages("ggplot2")
@@ -11,41 +11,34 @@ library(ggplot2)
 library(dplyr)
 library(pacman)
 
-#Importando o dataset manualmente 
+#Import the dataset 
 Fraud = read.csv2("Fraud.csv") #Não rodar
 
-#Visualizando apenas o tamanho do conjunto de dados: 
+#View the base 
 dim(Fraud)
 
-#Visualizando as 6 primeiras linhas do objeto "Fraud" criado: 
+#View six lines of the base: 
 head(Fraud)
 
-str(Fraud)
-
-glimpse(Fraud)
-
-#Obtendo informações resumidas dos dados
+#Resume informations 
 names(Fraud)
-
-#Entendendo um pouco mais sobre o dataset
 summary(Fraud)
 
-#Sumário das variáveis presentes no objeto dados. (Tendo uma alternativa mais informativa, porém ainda mais rápida) Pesquisar sobre o que é essa informação
+#Verify missing values
 sum(is.na(Fraud))
 
-#Visualizando a quantidade de resposta em 1 e 0:
+#Verify informations in the column "ifFraud
 table(Fraud$isFraud)
 
 table(Fraud$isFlaggedFraud)
 
 table(Fraud$type)
 
-#Verificar se aparece naus de yna vez o nome original da transferência e do destinatário
+#How many times show off the same identify?
 table(Fraud$nameOrig)
-#Pudemos perceber que o nome orginal de quem realizou a tranasferência, não foi repetido, então a partir de agora vamos verificar se repete em quem recebeu a transferência 
 table(Fraud$nameDest)
 
-#Gerando os identificadores que mais repetem na coluna do NameDest e NameOrig
+#Plot graph using variables NameDest and NameOrig:
 top_5_valoresD <- Fraud %>% 
   group_by(nameDest) %>% 
   tally() %>% 
@@ -63,10 +56,6 @@ top_5_valoresO <- Fraud %>%
 print(top_5_valoresD)
 print(top_5_valoresO)
 
-#Calculando a contagem de cada valor 
-contagemD <- table(top_5_valoresD)
-contagemO <- table(top_5_valoresO)
-
 #Criando um gráfico de barras
 graficoD <- barplot(contagemD, main = "Top 5 valores mais repetidos", xlab = "Valores", ylab = "Contagem") +
 text(grafico, contagem, labels = contagem, pos = 3, cex = 0.8)
@@ -75,12 +64,11 @@ text(grafico, contagem, labels = contagem, pos = 3, cex = 0.8)
 graficoO <- barplot(contagemO, main = "Top 5 valores mais repetidos", xlab = "Valores", ylab = "Contagem") +
 text(grafico, contagem, labels = contagem, pos = 3, cex = 0.8)
 
-#Desses usuários que tiveram a maior transaçao, qual foi a maior? 
+#About this variables, how the users is the more transactions? 
 relação_usuario_transacao <- Fraud %>% 
   group_by(nameOrig, nameDest, type) %>% 
   summarise(contagem = n())
 
-#A contagem que contém em cada tabela de relação, significa a quantidade de vezes que aquele destinitário executou uma transação, não importando o seu tipo
 relação_usuario_transacao_tipo <- relação_usuario_transacao %>% 
   group_by(nameOrig, type) %>% 
   summarise(contagem = n())
@@ -89,11 +77,11 @@ relação_usuario_transacao_tipo2 <- relação_usuario_transacao %>%
   group_by(nameDest, type) %>% 
   summarise(contagem = n())
 
-#Antes de começarmos, podemos verificar pelo menos quantas transaçoes foram realizadas, sendo assim: 
+#Show of the how many times about real transactions:
 table(relação_usuario_transacao_tipo$contagem)
 table(relação_usuario_transacao_tipo2$contagem)
 
-#Agrupar os dados por identificador e contar as transações de cada identificador
+#Now, count how many transactions one by one:
 transações_por_identificador <- relação_usuario_transacao_tipo %>% 
   group_by(nameOrig) %>% 
   summarise(total_transacoes=sum(contagem))
@@ -102,7 +90,7 @@ transações_por_identificador2 <- relação_usuario_transacao_tipo2 %>%
     group_by(nameDest) %>% 
     summarise(total_transacoes=sum(contagem))
 
-#Encontrar o identificador com maior número de transações 
+#FInd the transaction with max number: 
 identificador_mais_transações <- transações_por_identificador$nameOrig[which.max(transações_por_identificador$total_transacoes)]
 
 identificador_mais_transações2 <- transações_por_identificador2$nameDest[which.max(transações_por_identificador2$total_transacoes)]
@@ -111,12 +99,12 @@ mais_transacoes <- max(transações_por_identificador$total_transacoes)
 
 transações_por_identificador <- table(total_transacoes$nameOrig)
 
-#Agora, é preciso compreender quais ids fizeram mais transações entre si: 
+#Now, its more important how transactions with make with each other:
 relação_id <- relação_usuario_transacao %>% 
   group_by(nameDest, nameOrig) %>% 
   summarise(total_transacoes=sum(contagem))
 
-#Utilizar groupby com mutate para poder identificar relações com nameOrig com step e nameDest com step:
+#Use groupby with mutate for identify relationships with nameOrig by step and nameDest by step
 exemplo_mutate <- Fraud %>% 
   group_by(nameOrig) %>% 
   mutate(quant_Orig = n(), acumulado = row_number())
@@ -125,7 +113,7 @@ exemplo_mutate2 <- Fraud %>%
   group_by(nameDest) %>% 
   mutate(quant_Dest = n())
 
-#Transações caindo na conta e saindo; montar uma condição no qual entenda que eu quero apenas as transações que o saldo entrou na conta e já saiu 
+#Identify transactions sent in the count and in the same moment leaving
 cont_0_Orig <- exemplo_mutate %>% 
   group_by(oldbalanceOrg, newbalanceOrig) %>% 
   summarise(count = n())
@@ -134,51 +122,14 @@ acumulado <- exemplo_mutate %>%
   group_by(nameDest, step) %>% 
   mutate(quant_Orig = n(), acumulado = row_number())
 
-#Rodando o modelo de Regressão Logística Binomial
+#LOGISTIC REGRESSION BINOMIAL
 
-
-#Para dar início é necessário separar algumas informações para teste e treino 
-
-#Comando ~ significa "SE" 
-#Comando == significa "IGUALDADE"
-
-#Gerando gráficos
-ggplot(data = relação_usuario_transacao_tipo) +
-  geom_bar(mapping = aes(x = type))
-ggplot(data = relação_usuario_transacao_tipo, aes(x = type , fill = type)) + geo2m_bar() + labs(title = "ID",  x = 'Transação por tipo' , y = 'No of transactions' )+theme_classic()
-
-table(relação_usuario_transacao_tipo$contagem)
-
-table(relação_usuario_transacao$contagem)
-
-#Criando valores para poder apresentar no gráfico
-top_5_valores_tipo <- relação_usuario_transacao_tipo %>% 
-  group_by(nameOrig, contagem) %>% 
-  tally() %>% 
-  arrange(desc(n)) %>% 
-  head(5) %>% 
-  pull(nameOrig)
-
-top_5_valores_tipo2 <- relação_usuario_transacao_tipo2 %>% 
-  group_by(nameDest, contagem) %>% 
-  tally() %>% 
-  arrange(desc(n)) %>% 
-  head(5) %>% 
-  pull(nameDest)
-
-Fraud %>% 
-  select(nameOrig, step) %>%
-  group_by(step) %>%
-  mutate(step, na.rm = TRUE)
-  mutate(mass_norm = mass / mean(mass, na.rm = TRUE))
-
-#Construção do modelo 
+#Construct the model
 mod <- glm(isFraud ~ type + amount,
            family = binomial(link = 'logit'), data = Fraud)
 
-#Ausência de outliers/pontos de alavancagem 
+#Verify outliers and leverage poitns
 plot(mod, which = 5)
-
 summary(stdres(mod))
 
 #Build the model = Logist Regression
@@ -209,7 +160,6 @@ table(train$isFraud,predicttrain>0.5)
 #The limit the base train is 0.5 
 
 #Results: 
-
 #Precision: 0.999402 
 #Recall: 0.999765 
 #F1 Score: 0.999583 
@@ -233,14 +183,13 @@ table(test$isFraud,predicttest>0.5)
 #Confusion Matrix for threshlod of 0.7
 table(test$isFraud,predicttest>0.7)
 
-#Verificando probabilidade 
+#Verify probability 
 prop.table(table(train$Survived))
 
 #Applying - Model 2 
 mod2 <- glm(isFraud ~ type + amount + oldbalanceOrg + newbalanceOrig + oldbalanceDest + newbalanceDest, family = binomial(link = 'logit'), data = test)
 
 #Results: 
-
 #Precision: 0.999327
 #Recall: 0.9997159
 #F1 Score: 0.9995218
